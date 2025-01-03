@@ -3,6 +3,7 @@ module github.com/pottava/gemini-go-sample
 go 1.23.4
 
 require (
+	dario.cat/mergo v1.0.1
 	github.com/urfave/cli/v2 v2.27.5
 	google.golang.org/genai v0.0.0-20241220195418-51f274411ea7
 )

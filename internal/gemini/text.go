@@ -4,34 +4,29 @@ import (
 	"context"
 	"errors"
 
+	"dario.cat/mergo"
 	"google.golang.org/genai"
 )
 
-func Client(ctx context.Context, project, location string) (*genai.Client, error) {
-	return genai.NewClient(ctx, &genai.ClientConfig{
-		Project:  project,
-		Location: location,
-		Backend:  genai.BackendVertexAI,
-	})
-}
-
-func Content(value string) *genai.Content {
-	return &genai.Content{Parts: []*genai.Part{{Text: value}}}
-}
-
-func Text(ctx context.Context, project, location, model, prompt string, config *genai.GenerateContentConfig) (*string, error) {
+func Text(ctx context.Context, project, location, model, prompt string, file *genai.Part, config *genai.GenerateContentConfig) (*string, error) {
 	client, err := Client(ctx, project, location)
 	if err != nil {
 		return nil, err
 	}
 	if config == nil {
-		config = &genai.GenerateContentConfig{
-			SystemInstruction: Content("Would you reply in Japanese without using English, and include one piece of trivia, in an easy-to-read format?"),
-			Temperature:       genai.Ptr(1.0),
-			CandidateCount:    0,
-		}
+		config = &genai.GenerateContentConfig{}
 	}
-	result, err := client.Models.GenerateContent(ctx, model, genai.Text(prompt), config)
+	mergo.Merge(config, &genai.GenerateContentConfig{
+		SystemInstruction: Content("Would you reply in Japanese without using English, in an easy-to-read format?"),
+		Temperature:       genai.Ptr(0.0),
+		Tools:             []*genai.Tool{{GoogleSearch: &genai.GoogleSearch{}}},
+		CandidateCount:    0,
+	})
+	contents := genai.Text(prompt)
+	if file != nil {
+		contents[0].Parts = append(contents[0].Parts, file)
+	}
+	result, err := client.Models.GenerateContent(ctx, model, contents, config)
 	if err != nil {
 		return nil, err
 	}
