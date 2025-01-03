@@ -30,7 +30,7 @@ func main() {
 				Name:    "location",
 				Value:   "us-central1",
 				Usage:   "API ロケーション",
-				EnvVars: []string{"GOOGLE_CLOUD_LOCATION"},
+				EnvVars: []string{"GOOGLE_CLOUD_LOCATION", "GOOGLE_CLOUD_REGION"},
 			},
 			&cli.StringFlag{
 				Name:    "model",
@@ -77,7 +77,7 @@ func main() {
 					&cli.StringFlag{
 						Name:    "instruction",
 						Aliases: []string{"i"},
-						Value:   "You are a helpful assistant. Would you reply in Japanese without using English, in an easy-to-read format?",
+						Value:   "You are a helpful and careful assistant. Would you reply in Japanese without using English, in an easy-to-read format?",
 						Usage:   "LLM の振る舞いを指示",
 					},
 					&cli.Float64Flag{
@@ -87,8 +87,9 @@ func main() {
 						Usage:   "0: 安定重視, 1: 創造性重視",
 					},
 					&cli.StringFlag{
-						Name:  "file-uri",
-						Usage: "入力ファイルの URI (e.g. https://storage.googleapis.com/cloud-samples-data/generative-ai/image/scones.jpg)",
+						Name:    "file-uri",
+						Aliases: []string{"f"},
+						Usage:   "入力ファイルの URI (e.g. https://storage.googleapis.com/cloud-samples-data/generative-ai/image/scones.jpg)",
 					},
 					&cli.StringFlag{
 						Name:  "file-type",
@@ -101,8 +102,11 @@ func main() {
 						prompt = ctx.Args().Get(0)
 					}
 					var file *genai.Part
-					if ctx.String("file-uri") != "" && ctx.String("file-type") != "" {
-						file = &genai.Part{FileData: &genai.FileData{FileURI: ctx.String("file-uri"), MIMEType: ctx.String("file-type")}}
+					if ctx.String("file-uri") != "" {
+						if name, mime := lib.FileMeta(ctx.String("file-uri"), ctx.String("file-type")); name != "" && mime != "" {
+							slog.Debug("File", "URI", name, "MIME Type", mime)
+							file = &genai.Part{FileData: &genai.FileData{FileURI: name, MIMEType: mime}}
+						}
 					}
 					result, err := gemini.Text(ctx.Context, project, location, model, prompt, file, &genai.GenerateContentConfig{
 						SystemInstruction: gemini.Content(ctx.String("instruction")),
@@ -112,6 +116,58 @@ func main() {
 						return cli.Exit(err.Error(), 1)
 					}
 					fmt.Println(*result)
+					return nil
+				},
+			},
+			{
+				Name: "audio",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:    "instruction",
+						Aliases: []string{"i"},
+						Value:   "You are a helpful and careful assistant. Would you reply in Japanese without using English, in an easy-to-read format?",
+						Usage:   "LLM の振る舞いを指示",
+					},
+					&cli.Float64Flag{
+						Name:    "temperature",
+						Aliases: []string{"t"},
+						Value:   0.0,
+						Usage:   "0: 安定重視, 1: 創造性重視",
+					},
+					&cli.StringFlag{
+						Name:    "file-uri",
+						Aliases: []string{"f"},
+						Usage:   "入力ファイルの URI (e.g. https://storage.googleapis.com/cloud-samples-data/generative-ai/image/scones.jpg)",
+					},
+					&cli.StringFlag{
+						Name:  "file-type",
+						Usage: "入力ファイルの MIME タイプ (image/jpeg, application/pdf , audio/mp3, video/mp4 など)",
+					},
+				},
+				Action: func(ctx *cli.Context) error {
+					prompt := "Hi!"
+					if ctx.Args().Len() > 0 {
+						prompt = ctx.Args().Get(0)
+					}
+					var file *genai.Part
+					if ctx.String("file-uri") != "" {
+						if name, mime := lib.FileMeta(ctx.String("file-uri"), ctx.String("file-type")); name != "" && mime != "" {
+							slog.Debug("File", "URI", name, "MIME Type", mime)
+							file = &genai.Part{FileData: &genai.FileData{FileURI: name, MIMEType: mime}}
+						}
+					}
+					result, err := gemini.Audio(ctx.Context, project, location, model, prompt, file, &genai.GenerateContentConfig{
+						SystemInstruction: gemini.Content(ctx.String("instruction")),
+						Temperature:       genai.Ptr(ctx.Float64("temperature")),
+					})
+					if err != nil {
+						return cli.Exit(err.Error(), 1)
+					}
+					filepath, err := lib.SaveFile(result.Data, result.MIMEType, "result")
+					if err != nil {
+						return cli.Exit(err.Error(), 1)
+					}
+					fmt.Printf("ファイルを保存しました:%s\n", *filepath)
 					return nil
 				},
 			},
