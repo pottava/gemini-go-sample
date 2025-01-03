@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/pottava/gemini-go-sample/internal/gemini"
+	"github.com/pottava/gemini-go-sample/internal/lib"
 	"github.com/urfave/cli/v2"
 	"google.golang.org/genai"
 )
@@ -34,16 +35,22 @@ func main() {
 			&cli.StringFlag{
 				Name:    "model",
 				Aliases: []string{"m"},
-				Value:   "gemini-2.0-flash-exp",
+				Value:   gemini.GEMINI_2_0_FLASH,
+				Usage:   fmt.Sprintf("Gemini モデル (%s, %s など)", gemini.GEMINI_2_0_FLASH, gemini.GEMINI_2_0_FLASH_THINKING),
+				EnvVars: []string{"GEMINI_MODEL"},
+			},
+			&cli.StringFlag{
+				Name:    "loglevel",
+				Value:   "INFO",
+				EnvVars: []string{"LOG_LEVEL"},
 			},
 		},
 		Before: func(ctx *cli.Context) error {
-			slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-				Level: slog.LevelDebug,
-			})))
 			project = ctx.String("project")
 			location = ctx.String("location")
 			model = ctx.String("model")
+			lib.SetLogLevel(ctx.String("loglevel"))
+			slog.Debug("Params", "Project", project, "Location", location, "Model", model)
 
 			if _, err := gemini.Client(ctx.Context, project, location); err != nil {
 				return cli.Exit(err.Error(), 1)
@@ -88,7 +95,6 @@ func main() {
 						Usage: "入力ファイルの MIME タイプ (image/jpeg, application/pdf , audio/mp3, video/mp4 など)",
 					},
 				},
-				UseShortOptionHandling: true,
 				Action: func(ctx *cli.Context) error {
 					prompt := "Hi!"
 					if ctx.Args().Len() > 0 {

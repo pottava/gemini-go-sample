@@ -16,10 +16,14 @@ func Text(ctx context.Context, project, location, model, prompt string, file *ge
 	if config == nil {
 		config = &genai.GenerateContentConfig{}
 	}
+	var tools []*genai.Tool
+	if model == GEMINI_2_0_FLASH { // gemini-2.0-flash-thinking does not support Google Search yet.
+		tools = []*genai.Tool{{GoogleSearch: &genai.GoogleSearch{}}}
+	}
 	mergo.Merge(config, &genai.GenerateContentConfig{
 		SystemInstruction: Content("Would you reply in Japanese without using English, in an easy-to-read format?"),
 		Temperature:       genai.Ptr(0.0),
-		Tools:             []*genai.Tool{{GoogleSearch: &genai.GoogleSearch{}}},
+		Tools:             tools,
 		CandidateCount:    0,
 	})
 	contents := genai.Text(prompt)
