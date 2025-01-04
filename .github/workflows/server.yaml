@@ -1,4 +1,4 @@
-name: Release
+name: Server
 
 on:
   push:
@@ -10,7 +10,7 @@ env:
 
 jobs:
   release:
-    name: Release
+    name: Release the API server
     runs-on: ubuntu-latest
 
     permissions:

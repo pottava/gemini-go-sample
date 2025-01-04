@@ -4,6 +4,7 @@
 
 ```sh
 export GOOGLE_CLOUD_PROJECT=$( gcloud config get-value project )
+gcloud auth application-default login
 go run cmd/main.go
 ```
 
@@ -15,8 +16,7 @@ go run cmd/main.go prompt "令和元年元旦生まれの子どもはいま何�
 
 ## 画像、動画、音声、PDF
 
-URI が拡張子で終わっているものは URI のみの指定で OK です。
-拡張子がないものは `--file-type` も指定が必要です。
+URI が拡張子で終わっているものは URI のみで OK、拡張子がないものは `--file-type` も指定が必要です。
 
 ```sh
 go run cmd/main.go prompt \
