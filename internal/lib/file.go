@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"mime"
 	"os"
+	"path/filepath"
+
+	"google.golang.org/genai"
 )
 
 func SaveFile(data []byte, mimeType string, filename string) (*string, error) {
@@ -16,4 +19,14 @@ func SaveFile(data []byte, mimeType string, filename string) (*string, error) {
 		return nil, e
 	}
 	return &filepath, nil
+}
+
+func FileMeta(filename string, mimetype *string) (string, string) {
+	if mimetype == nil || *mimetype == "" {
+		mimetype = genai.Ptr(mime.TypeByExtension(filepath.Ext(filename)))
+	}
+	if mimetype == nil || *mimetype == "" {
+		return "", ""
+	}
+	return filename, *mimetype
 }

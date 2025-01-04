@@ -5,11 +5,12 @@ import (
 	"errors"
 
 	"dario.cat/mergo"
+	"github.com/pottava/gemini-go-sample/internal/lib"
 	"google.golang.org/genai"
 )
 
-func Text(ctx context.Context, project, location, model, prompt string, file *genai.Part, config *genai.GenerateContentConfig) (*string, error) {
-	client, err := Client(ctx, project, location)
+func Text(ctx context.Context, prompt string, file *genai.Part, config *genai.GenerateContentConfig) (*string, error) {
+	client, err := Client(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -17,7 +18,7 @@ func Text(ctx context.Context, project, location, model, prompt string, file *ge
 		config = &genai.GenerateContentConfig{}
 	}
 	var tools []*genai.Tool
-	if model == GEMINI_2_0_FLASH { // gemini-2.0-flash-thinking does not support Google Search yet.
+	if lib.Config.Model == GEMINI_2_0_FLASH { // gemini-2.0-flash-thinking does not support Google Search yet.
 		tools = []*genai.Tool{{GoogleSearch: &genai.GoogleSearch{}}}
 	}
 	mergo.Merge(config, &genai.GenerateContentConfig{
@@ -30,7 +31,7 @@ func Text(ctx context.Context, project, location, model, prompt string, file *ge
 	if file != nil {
 		contents[0].Parts = append(contents[0].Parts, file)
 	}
-	result, err := client.Models.GenerateContent(ctx, model, contents, config)
+	result, err := client.Models.GenerateContent(ctx, lib.Config.Model, contents, config)
 	if err != nil {
 		return nil, err
 	}

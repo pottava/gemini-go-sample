@@ -11,12 +11,6 @@ import (
 	"google.golang.org/genai"
 )
 
-var (
-	project  string
-	location string
-	model    string
-)
-
 func main() {
 	app := &cli.App{
 		Name: "Gemini CLI",
@@ -46,19 +40,19 @@ func main() {
 			},
 		},
 		Before: func(ctx *cli.Context) error {
-			project = ctx.String("project")
-			location = ctx.String("location")
-			model = ctx.String("model")
+			lib.Config.Project = ctx.String("project")
+			lib.Config.Location = ctx.String("location")
+			lib.Config.Model = ctx.String("model")
 			lib.SetLogLevel(ctx.String("loglevel"))
-			slog.Debug("Params", "Project", project, "Location", location, "Model", model)
+			slog.Debug("Params", "Project", lib.Config.Project, "Location", lib.Config.Location, "Model", lib.Config.Model)
 
-			if _, err := gemini.Client(ctx.Context, project, location); err != nil {
+			if _, err := gemini.Client(ctx.Context); err != nil {
 				return cli.Exit(err.Error(), 1)
 			}
 			return nil
 		},
 		Action: func(ctx *cli.Context) error {
-			result, err := gemini.Text(ctx.Context, project, location, model, "Hi!", nil, &genai.GenerateContentConfig{
+			result, err := gemini.Text(ctx.Context, "Hi!", nil, &genai.GenerateContentConfig{
 				SystemInstruction: gemini.Content(
 					"Would you reply in Japanese without using English, and include one piece of trivia, in an easy-to-read format?",
 				),
@@ -103,12 +97,18 @@ func main() {
 					}
 					var file *genai.Part
 					if ctx.String("file-uri") != "" {
-						if name, mime := lib.FileMeta(ctx.String("file-uri"), ctx.String("file-type")); name != "" && mime != "" {
+						if name, mime := lib.FileMeta(ctx.String("file-uri"), genai.Ptr(ctx.String("file-type"))); name != "" {
+							if mime == "" {
+								return cli.Exit(fmt.Errorf("file-type の指定が必要です"), 1)
+							}
 							slog.Debug("File", "URI", name, "MIME Type", mime)
 							file = &genai.Part{FileData: &genai.FileData{FileURI: name, MIMEType: mime}}
+							if bytes, err := os.ReadFile(name); err == nil {
+								file = &genai.Part{InlineData: &genai.Blob{Data: bytes, MIMEType: mime}}
+							}
 						}
 					}
-					result, err := gemini.Text(ctx.Context, project, location, model, prompt, file, &genai.GenerateContentConfig{
+					result, err := gemini.Text(ctx.Context, prompt, file, &genai.GenerateContentConfig{
 						SystemInstruction: gemini.Content(ctx.String("instruction")),
 						Temperature:       genai.Ptr(ctx.Float64("temperature")),
 					})
@@ -151,12 +151,18 @@ func main() {
 					}
 					var file *genai.Part
 					if ctx.String("file-uri") != "" {
-						if name, mime := lib.FileMeta(ctx.String("file-uri"), ctx.String("file-type")); name != "" && mime != "" {
+						if name, mime := lib.FileMeta(ctx.String("file-uri"), genai.Ptr(ctx.String("file-type"))); name != "" {
+							if mime == "" {
+								return cli.Exit(fmt.Errorf("file-type の指定が必要です"), 1)
+							}
 							slog.Debug("File", "URI", name, "MIME Type", mime)
 							file = &genai.Part{FileData: &genai.FileData{FileURI: name, MIMEType: mime}}
+							if bytes, err := os.ReadFile(name); err == nil {
+								file = &genai.Part{InlineData: &genai.Blob{Data: bytes, MIMEType: mime}}
+							}
 						}
 					}
-					result, err := gemini.Audio(ctx.Context, project, location, model, prompt, file, &genai.GenerateContentConfig{
+					result, err := gemini.Audio(ctx.Context, prompt, file, &genai.GenerateContentConfig{
 						SystemInstruction: gemini.Content(ctx.String("instruction")),
 						Temperature:       genai.Ptr(ctx.Float64("temperature")),
 					})

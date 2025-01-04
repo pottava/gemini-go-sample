@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package gemini.v2;
+
+option go_package = "internal/gen/gemini/v2;geminiv2";
+
+// テキスト生成のリクエスト
+message GenerateRequest {
+
+  // 生成するテキストの指示
+  string prompt = 1;
+
+  // 生成するテキストの温度 (0.0 - 1.0)
+  optional double temperature = 2;
+
+  // 生成するテキストのトップ K (1 - 100)
+  optional double top_k = 3;
+
+  // 生成するテキストのトップ P (0.0 - 1.0)
+  optional double top_p = 4;
+
+  // 生成するテキストの最大トークン数
+  optional int64 max_tokens = 5;
+
+  // 入力ファイル URI
+  optional string file_uri = 6 [json_name = "file-uri"];
+
+  // 入力ファイル MIME Type
+  optional string file_type = 7 [json_name = "file-type"];
+}
+
+// テキスト生成のレスポンス
+message GenerateResponse {
+  string text = 1;
+}
+
+// Gemini API のサービス定義
+service GeminiService {
+  rpc Generate (GenerateRequest) returns (GenerateResponse);
+}
