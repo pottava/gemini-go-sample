@@ -40,7 +40,7 @@ func main() {
 	api.Handle(path, lib.WrapHandler(handler.ServeHTTP))
 	api.Handle("/api/", http.StripPrefix("/api", api))
 	server := &http.Server{
-		Addr:    "localhost:8080",
+		Addr:    "0.0.0.0:8080",
 		Handler: h2c.NewHandler(api, &http2.Server{}),
 	}
 

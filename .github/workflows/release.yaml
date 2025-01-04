@@ -1,0 +1,56 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  GOOGLE_CLOUD_REGION: "asia-northeast1"
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: "read"
+      id-token: "write"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GOOGLE_CLOUD_WORKLOAD_IDP }}
+          service_account: "sa-cicd@${{ secrets.GOOGLE_CLOUD_PROJECT }}.iam.gserviceaccount.com"
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure docker
+        run: gcloud auth configure-docker ${{ env.GOOGLE_CLOUD_REGION }}-docker.pkg.dev --quiet
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - id: sha
+        name: Set GitHub shorted SHA
+        run: echo "sha_short=$( git rev-parse --short HEAD )" >> $GITHUB_OUTPUT
+
+      - name: Build the image
+        uses: docker/build-push-action@v3
+        with:
+          tags: ${{ env.GOOGLE_CLOUD_REGION }}-docker.pkg.dev/${{ secrets.GOOGLE_CLOUD_PROJECT }}/gemini-apps/server:${{ steps.sha.outputs.sha_short }}
+          context: server
+          push: true
+
+      - name: Release
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: "gemini-go"
+          region: ${{ env.GOOGLE_CLOUD_REGION }}
+          image: ${{ env.GOOGLE_CLOUD_REGION }}-docker.pkg.dev/${{ secrets.GOOGLE_CLOUD_PROJECT }}/gemini-apps/server:${{ steps.sha.outputs.sha_short }}
+          flags: --set-env-vars=GOOGLE_CLOUD_PROJECT=${{ secrets.GOOGLE_CLOUD_PROJECT }} --use-http2 --service-account=sa-app@${{ secrets.GOOGLE_CLOUD_PROJECT }}.iam.gserviceaccount.com
