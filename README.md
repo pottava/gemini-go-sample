@@ -37,7 +37,7 @@ buf generate proto
 API サーバを起動して
 
 ```sh
-go run server/main.go
+go run api/main.go
 ```
 
 リクエストを送信

@@ -15,6 +15,7 @@ type config struct {
 	Location string `env:"GOOGLE_CLOUD_LOCATION" envDefault:"us-central1"`
 	Model    string `env:"GEMINI_MODEL" envDefault:"gemini-2.0-flash-exp"`
 	LogLevel string `env:"LOG_LEVEL" envDefault:"INFO"`
+	Version  string
 }
 
 func InitConfig() {

@@ -12,9 +12,9 @@ import (
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 
+	"github.com/pottava/gemini-go-sample/api/routes"
 	"github.com/pottava/gemini-go-sample/internal/gen/gemini/v2/geminiv2connect"
 	"github.com/pottava/gemini-go-sample/internal/lib"
-	"github.com/pottava/gemini-go-sample/server/routes"
 )
 
 var (
@@ -25,9 +25,10 @@ var (
 
 func main() {
 	lib.InitConfig()
+	lib.Config.Version = ver
 
 	api := http.NewServeMux()
-	api.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	api.HandleFunc("/version", func(w http.ResponseWriter, r *http.Request) {
 		if len(commit) > 0 && len(date) > 0 {
 			fmt.Fprintf(w, "%s-%s (built at %s)\n", ver, commit, date)
 			return

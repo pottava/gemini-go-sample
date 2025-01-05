@@ -22,7 +22,7 @@ func Text(ctx context.Context, prompt string, file *genai.Part, config *genai.Ge
 		tools = []*genai.Tool{{GoogleSearch: &genai.GoogleSearch{}}}
 	}
 	mergo.Merge(config, &genai.GenerateContentConfig{
-		SystemInstruction: Content("Would you reply in Japanese without using English, in an easy-to-read format?"),
+		SystemInstruction: Content("You are a helpful and careful assistant. Would you reply in Japanese without using English, in an easy-to-read format?"),
 		Temperature:       genai.Ptr(0.0),
 		Tools:             tools,
 		CandidateCount:    0,

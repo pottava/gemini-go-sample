@@ -1,4 +1,4 @@
-name: Server
+name: API
 
 on:
   push:
@@ -43,8 +43,8 @@ jobs:
       - name: Build the image
         uses: docker/build-push-action@v3
         with:
-          tags: ${{ env.GOOGLE_CLOUD_REGION }}-docker.pkg.dev/${{ secrets.GOOGLE_CLOUD_PROJECT }}/gemini-apps/server:${{ steps.sha.outputs.sha_short }}
-          context: server
+          tags: ${{ env.GOOGLE_CLOUD_REGION }}-docker.pkg.dev/${{ secrets.GOOGLE_CLOUD_PROJECT }}/gemini-apps/api:${{ steps.sha.outputs.sha_short }}
+          context: api
           push: true
 
       - name: Release
@@ -52,5 +52,5 @@ jobs:
         with:
           service: "gemini-go"
           region: ${{ env.GOOGLE_CLOUD_REGION }}
-          image: ${{ env.GOOGLE_CLOUD_REGION }}-docker.pkg.dev/${{ secrets.GOOGLE_CLOUD_PROJECT }}/gemini-apps/server:${{ steps.sha.outputs.sha_short }}
-          flags: --set-env-vars=GOOGLE_CLOUD_PROJECT=${{ secrets.GOOGLE_CLOUD_PROJECT }} --use-http2 --service-account=sa-app@${{ secrets.GOOGLE_CLOUD_PROJECT }}.iam.gserviceaccount.com
+          image: ${{ env.GOOGLE_CLOUD_REGION }}-docker.pkg.dev/${{ secrets.GOOGLE_CLOUD_PROJECT }}/gemini-apps/api:${{ steps.sha.outputs.sha_short }}
+          flags: --set-env-vars=GOOGLE_CLOUD_PROJECT=${{ secrets.GOOGLE_CLOUD_PROJECT }},LOG_LEVEL=DEBUG --use-http2 --service-account=sa-app@${{ secrets.GOOGLE_CLOUD_PROJECT }}.iam.gserviceaccount.com

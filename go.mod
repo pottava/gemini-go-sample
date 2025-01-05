@@ -4,6 +4,7 @@ go 1.23.4
 
 require (
 	connectrpc.com/connect v1.17.0
+	connectrpc.com/cors v0.1.0
 	dario.cat/mergo v1.0.1
 	github.com/caarlos0/env v3.5.0+incompatible
 	github.com/urfave/cli/v2 v2.27.5

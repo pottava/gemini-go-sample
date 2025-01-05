@@ -12,7 +12,7 @@ RUN githash=$(git rev-parse --short HEAD 2>/dev/null) \
     && today=$(date +%Y-%m-%d --utc) \
     && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
     -ldflags "-s -w -X main.ver=1.0.0 -X main.commit=${githash} -X main.date=${today}" \
-    -o /app server/main.go
+    -o /app api/main.go
 
 FROM scratch
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/

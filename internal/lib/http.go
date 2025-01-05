@@ -7,22 +7,46 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"os"
 	"strings"
 	"time"
+
+	"connectrpc.com/cors"
 )
+
+func PreflightAPI(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		handler.ServeHTTP(w, r)
+	})
+}
 
 // WrapHandler wraps every handlers
 func WrapHandler(handler func(w http.ResponseWriter, r *http.Request)) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/" {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
 		proc := time.Now()
 		addr := r.RemoteAddr
 		if ip, found := header(r, "X-Forwarded-For"); found {
 			addr = ip
 		}
+		// CORS
+		if strings.EqualFold(r.Method, http.MethodOptions) {
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+			w.Header().Set("Access-Control-Allow-Methods", strings.Join([]string{http.MethodOptions, http.MethodHead, http.MethodGet, http.MethodPost}, ","))
+			w.Header().Set("Access-Control-Allow-Headers", "Accept,Authorization,Content-Type,Origin")
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		origin := "*"
+		region, f1 := os.LookupEnv("GOOGLE_CLOUD_REGION")
+		number, f2 := os.LookupEnv("GOOGLE_CLOUD_PROJECT_NUMBER")
+		if f1 && f2 {
+			origin = fmt.Sprintf("https://gemini-go-%s.%s.run.app", number, region)
+		}
+		w.Header().Set("Access-Control-Allow-Origin", origin)
+		w.Header().Set("Access-Control-Allow-Methods", strings.Join(cors.AllowedMethods(), ","))
+		w.Header().Set("Access-Control-Allow-Headers", strings.Join(cors.AllowedHeaders(), ","))
+		w.Header().Set("Access-Control-Expose-Headers", strings.Join(cors.ExposedHeaders(), ","))
+
 		// Content-Encoding
 		ioWriter := w.(io.Writer)
 		if encodings, found := header(r, "Accept-Encoding"); found {

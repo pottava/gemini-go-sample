@@ -19,7 +19,7 @@ func Audio(ctx context.Context, prompt string, file *genai.Part, config *genai.G
 		config = &genai.GenerateContentConfig{}
 	}
 	mergo.Merge(config, &genai.GenerateContentConfig{
-		SystemInstruction:  Content("Would you reply in Japanese without using English?"),
+		SystemInstruction:  Content("You are a helpful and careful assistant. Would you reply in Japanese without using English?"),
 		Temperature:        genai.Ptr(0.0),
 		ResponseModalities: []string{"AUDIO"},
 		SpeechConfig: &genai.SpeechConfig{
