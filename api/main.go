@@ -45,6 +45,9 @@ func main() {
 		Handler: h2c.NewHandler(api, &http2.Server{}),
 	}
 
+	// Web
+	api.Handle("/", http.FileServer(http.Dir("web/dist")))
+
 	// Graceful shutdown
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)

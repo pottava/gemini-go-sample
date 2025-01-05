@@ -15,9 +15,6 @@ type Server struct{}
 
 func (s *Server) Generate(ctx context.Context, req *connect.Request[v2.GenerateRequest]) (*connect.Response[v2.GenerateResponse], error) {
 	config := &genai.GenerateContentConfig{
-		SystemInstruction: gemini.Content(
-			"Would you reply in Japanese without using English, and include one piece of trivia, in an easy-to-read format?",
-		),
 		Temperature:     req.Msg.Temperature,
 		TopK:            req.Msg.TopK,
 		TopP:            req.Msg.TopP,

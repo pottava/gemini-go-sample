@@ -16,5 +16,6 @@ RUN githash=$(git rev-parse --short HEAD 2>/dev/null) \
 
 FROM scratch
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=builder /go/src/github.com/pottava/gemini-go-sample/web/dist /web/dist
 COPY --from=builder /app /gemini-go-sample
 ENTRYPOINT ["/gemini-go-sample"]
