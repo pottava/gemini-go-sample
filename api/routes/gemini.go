@@ -11,9 +11,9 @@ import (
 	"google.golang.org/genai"
 )
 
-type Server struct{}
+type GeminiServer struct{}
 
-func (s *Server) Generate(ctx context.Context, req *connect.Request[v2.GenerateRequest]) (*connect.Response[v2.GenerateResponse], error) {
+func (s *GeminiServer) Generate(ctx context.Context, req *connect.Request[v2.GenerateRequest]) (*connect.Response[v2.GenerateResponse], error) {
 	config := &genai.GenerateContentConfig{
 		Temperature:     req.Msg.Temperature,
 		TopK:            req.Msg.TopK,
@@ -23,8 +23,8 @@ func (s *Server) Generate(ctx context.Context, req *connect.Request[v2.GenerateR
 	var file *genai.Part
 	if req.Msg.FileUri != nil {
 		if name, mime := lib.FileMeta(*req.Msg.FileUri, req.Msg.FileType); name != "" && mime != "" {
-			slog.Debug("File", "URI", name, "MIME Type", mime)
 			file = &genai.Part{FileData: &genai.FileData{FileURI: name, MIMEType: mime}}
+			slog.Debug("File", "URI", name, "MIME Type", mime)
 		}
 	}
 	result, err := gemini.Text(ctx, req.Msg.Prompt, file, config)

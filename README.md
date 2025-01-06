@@ -47,3 +47,9 @@ curl -iXPOST -H "Content-Type: application/json" \
     -d '{"prompt": "この写真を説明してください", "file-uri": "https://storage.googleapis.com/cloud-samples-data/generative-ai/image/scones.jpg"}' \
     http://localhost:8080/api/gemini.v2.GeminiService/Generate
 ```
+
+もしくは Web UI からチャットを開始
+
+```sh
+open http://localhost:8080
+```

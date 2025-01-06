@@ -37,8 +37,9 @@ func main() {
 	})
 
 	// APIs
-	path, handler := geminiv2connect.NewGeminiServiceHandler(&routes.Server{})
+	path, handler := geminiv2connect.NewGeminiServiceHandler(&routes.GeminiServer{})
 	api.Handle(path, lib.WrapHandler(handler.ServeHTTP))
+	api.Handle("/files/", lib.WrapHandler(routes.FileUtils))
 	api.Handle("/api/", http.StripPrefix("/api", api))
 	server := &http.Server{
 		Addr:    "0.0.0.0:8080",

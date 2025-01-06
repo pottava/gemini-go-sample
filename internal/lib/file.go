@@ -22,6 +22,9 @@ func SaveFile(data []byte, mimeType string, filename string) (*string, error) {
 }
 
 func FileMeta(filename string, mimetype *string) (string, string) {
+	if filename == "" {
+		return "", ""
+	}
 	if mimetype == nil || *mimetype == "" {
 		mimetype = genai.Ptr(mime.TypeByExtension(filepath.Ext(filename)))
 	}
