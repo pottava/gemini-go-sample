@@ -26,6 +26,7 @@ func Text(ctx context.Context, prompt string, file *genai.Part, config *genai.Ge
 		Temperature:       genai.Ptr(0.0),
 		Tools:             tools,
 		CandidateCount:    0,
+		MaxOutputTokens:   genai.Ptr(int64(2048)),
 	})
 	contents := genai.Text(prompt)
 	if file != nil {

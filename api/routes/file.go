@@ -76,6 +76,9 @@ func FileUtils(w http.ResponseWriter, r *http.Request) {
 			}
 			slog.Debug("Routes.FileUtils", "file saved:", header.Filename)
 
+			w.Header().Set("Content-Type", "text/plain")
+			fmt.Fprintf(w, "gs://%s/%s", lib.Config.Bucket, header.Filename)
+
 		default:
 			w.WriteHeader(http.StatusMethodNotAllowed)
 		}
