@@ -25,7 +25,7 @@ func Text(ctx context.Context, prompt string, file *genai.Part, config *genai.Ge
 		SystemInstruction: Content("You are a helpful and careful assistant. Would you reply in Japanese without using English, in an easy-to-read format?"),
 		Temperature:       genai.Ptr(0.0),
 		Tools:             tools,
-		CandidateCount:    0,
+		CandidateCount:    genai.Ptr(int64(0)),
 		MaxOutputTokens:   genai.Ptr(int64(2048)),
 	})
 	contents := genai.Text(prompt)
